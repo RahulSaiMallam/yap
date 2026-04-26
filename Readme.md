@@ -1,73 +1,67 @@
-# OpenSuperWhisper
+# Yap
 
-OpenSuperWhisper is a macOS application that provides real-time audio transcription using the Whisper model. It offers a seamless way to record and transcribe audio with customizable settings and keyboard shortcuts.
+A fast, local-first dictation app for macOS. Hold a hotkey, speak, release — your speech is transcribed locally with Whisper and pasted into whatever app you're using. Optional local LLM cleanup turns "um like grab lunch tomorrow" into "Grab lunch tomorrow." before it lands. Free alternative to WisprFlow.
 
-<p align="center">
-<img src="docs/image.png" width="400" /> <img src="docs/image_indicator.png" width="400" />
-</p>
+Apple Silicon only. Menu-bar app, no Dock clutter.
 
 ## Features
 
-- 🎙️ Real-time audio recording and transcription
-- 🧠 Two transcription engines: [Whisper](https://github.com/ggerganov/whisper.cpp) and [Parakeet](https://github.com/AntinomyCollective/FluidAudio) — download models directly from the app
-- ⌨️ Global keyboard shortcuts — key combination or single modifier key (e.g. Left ⌘, Right ⌥, Fn)
-- ✊ Hold-to-record mode — hold the shortcut to record, release to stop
-- 📁 Drag & drop audio files for transcription with queue processing
-- 🎤 Microphone selection — switch between built-in, external, Bluetooth and iPhone (Apple Continuity) mics from the menu bar
-- 🌍 Support for multiple languages with auto-detection
-- 🇯🇵🇨🇳🇰🇷 Asian language autocorrect ([autocorrect](https://github.com/huacnlee/autocorrect))
+- Hold-to-talk dictation triggered by any modifier key (Right ⌥ / Fn / etc.) or shortcut
+- Local Whisper transcription (whisper.cpp) and FluidAudio Parakeet (English-only) engines
+- 30+ languages including English, Hindi, Telugu, Tamil, Bengali, Marathi, Punjabi, Kannada, Malayalam, Gujarati, Urdu, Japanese, Mandarin, Spanish, French, German, Arabic, and more
+- Smart paste: drops dictated text into the focused text field, or copies to the clipboard with a notification when there isn't one
+- Auto-submit in chat apps (Claude, ChatGPT, Slack, Messages, Discord, Teams, Telegram, WhatsApp) — paste, then synthetic Return after a configurable delay, with focus-drift abort
+- Custom vocabulary via Whisper's initial prompt (jargon, names, project terms)
+- Optional AI cleanup pass via local Ollama: punctuation, capitalization, fillers stripped, with silent fallback to the raw transcript when Ollama isn't running
+- Modern glass-morphism UI
 
-## Installation
+## Install
 
-```shell
-brew update # Optional
-brew install opensuperwhisper
+Apple Silicon Mac (arm64) running macOS 14+.
+
+```sh
+git clone https://github.com/rahulsaimallam/yap.git
+cd yap
+git submodule update --init --recursive
+brew install cmake libomp rust ruby
+gem install xcpretty
+./run.sh build
 ```
 
-Or from [GitHub releases page](https://github.com/Starmel/OpenSuperWhisper/releases).
+The build script signs with a local self-signed certificate and a designated requirement so TCC permissions persist across rebuilds.
 
-## Requirements
+For AI cleanup:
 
-- macOS (Apple Silicon/ARM64)
+```sh
+brew install ollama && brew services start ollama
+ollama pull llama3.2:3b
+```
 
-## Support
+Then turn on the toggle in Yap → Settings → Cleanup.
 
-If you encounter any issues or have questions, please:
-1. Check the existing issues in the repository
-2. Create a new issue with detailed information about your problem
-3. Include system information and logs when reporting bugs
+## Hotkey
 
-## Building locally
+Default trigger is the right Option key. Configure in Settings → Shortcuts: pick a single modifier (Right ⌥, Left ⌥, Fn, etc.) or a key combination, plus hold-to-record vs tap-to-toggle.
 
-To build locally, you'll need:
+## Privacy
 
-    git clone git@github.com:Starmel/OpenSuperWhisper.git
-    cd OpenSuperWhisper
-    git submodule update --init --recursive
-    brew install cmake libomp rust ruby
-    gem install xcpretty
-    ./run.sh build
+Audio never leaves your machine.
 
-In case of problems, consult `.github/workflows/build.yml` which is our CI workflow
-where the app gets built automatically on GitHub's CI.
+- Whisper / Parakeet run locally
+- Ollama (if enabled) runs on `localhost:11434`
+- No telemetry, no network calls outside the configurable Ollama endpoint and one-time model downloads from Hugging Face
 
-## Contributing
+## Acknowledgements
 
-Contributions are welcome! Please feel free to submit pull requests or create issues for bugs and feature requests.
+Yap is a heavily reworked fork of [OpenSuperWhisper by Starmel](https://github.com/Starmel/OpenSuperWhisper), itself built on:
 
-### Contribution TODO list
+- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) by Georgi Gerganov
+- [FluidAudio](https://github.com/AntinomyCollective/FluidAudio) Parakeet
+- [autocorrect](https://github.com/huacnlee/autocorrect) for Asian language postprocessing
+- [KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts) by Sindre Sorhus
 
-- [ ] Streaming transcription
-- [ ] Custom dictionary / keyword boosting ([#19](https://github.com/Starmel/OpenSuperWhisper/issues/19))
-- [ ] Intel macOS compatibility ([#15](https://github.com/Starmel/OpenSuperWhisper/issues/15))
-- [ ] Agent mode ([#14](https://github.com/Starmel/OpenSuperWhisper/issues/14))
-- [x] Background app ([#8](https://github.com/Starmel/OpenSuperWhisper/issues/8))
-- [x] Support long-press single key audio recording ([#18](https://github.com/Starmel/OpenSuperWhisper/issues/18))
+Original OpenSuperWhisper is MIT-licensed, and so is Yap. See [LICENSE](LICENSE).
 
 ## License
 
-OpenSuperWhisper is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Whisper Models
-
-You can download Whisper model files (`.bin`) from the [Whisper.cpp Hugging Face repository](https://huggingface.co/ggerganov/whisper.cpp/tree/main). Place the downloaded `.bin` files in the app's models directory. On first launch, the app will attempt to copy a default model automatically, but you can add more models manually.
+MIT. See [LICENSE](LICENSE).

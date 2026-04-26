@@ -4,6 +4,7 @@ class LanguageUtil {
     static let availableLanguages = [
         "auto", "en", "zh", "de", "es", "ru", "ko", "fr", "ja", "pt", "tr", "pl", "ca", "nl", "ar",
         "sv", "it", "id", "hi", "fi",
+        "te", "ta", "bn", "mr", "kn", "ml", "pa", "gu", "ur",
     ]
 
     static let languageNames = [
@@ -27,6 +28,15 @@ class LanguageUtil {
         "id": "Indonesian",
         "hi": "Hindi",
         "fi": "Finnish",
+        "te": "Telugu",
+        "ta": "Tamil",
+        "bn": "Bengali",
+        "mr": "Marathi",
+        "kn": "Kannada",
+        "ml": "Malayalam",
+        "pa": "Punjabi",
+        "gu": "Gujarati",
+        "ur": "Urdu",
     ]
 
     static func getSystemLanguage() -> String {

@@ -1,10 +1,3 @@
-//
-//  OpenSuperWhisperApp.swift
-//  OpenSuperWhisper
-//
-//  Created by user on 05.02.2025.
-//
-
 import AVFoundation
 import SwiftUI
 import AppKit
@@ -12,7 +5,7 @@ import Combine
 import UniformTypeIdentifiers
 
 @main
-struct OpenSuperWhisperApp: App {
+struct YapApp: App {
     @StateObject private var appState = AppState()
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
@@ -25,12 +18,12 @@ struct OpenSuperWhisperApp: App {
                     ContentView()
                 }
             }
-            .frame(width: 450)
-            .frame(minHeight: 400, maxHeight: 900)
+            .frame(minWidth: 520, idealWidth: 600, maxWidth: 900)
+            .frame(minHeight: 480, idealHeight: 720, maxHeight: 1100)
             .environmentObject(appState)
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 450, height: 650)
+        .defaultSize(width: 600, height: 720)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {}
@@ -54,7 +47,7 @@ struct OpenSuperWhisperApp: App {
     }
 }
 
-extension OpenSuperWhisperApp {
+extension YapApp {
     static func startTranscriptionQueue() {
         Task { @MainActor in
             TranscriptionQueue.shared.startProcessingQueue()
@@ -88,19 +81,67 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var microphoneObserver: AnyCancellable?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        
+
         setupStatusBarItem()
-        
+
         if let window = NSApplication.shared.windows.first {
             self.mainWindow = window
             window.delegate = self
-            
-            window.minSize = NSSize(width: 450, height: 400)
-            window.maxSize = NSSize(width: 450, height: 900)
+
+            window.minSize = NSSize(width: 520, height: 480)
+            window.maxSize = NSSize(width: 1100, height: 1100)
+
+            // SwiftUI restores the saved window frame from UserDefaults. On
+            // a multi-monitor setup the saved frame can reference a screen
+            // that's no longer connected, leaving the window at an
+            // off-screen position (e.g. x=-1185) where the user can't find
+            // it. Re-center on the active screen if no current screen
+            // intersects the saved frame.
+            ensureWindowOnscreen(window)
+
+            // LSUIElement keeps the app in .accessory until something
+            // explicitly asks for the regular policy. Without this hop the
+            // SwiftUI main window can launch into a hidden state — the
+            // process is alive, the window object exists, but it never
+            // makes it to a visible screen. Surfacing it on launch matches
+            // what users expect when they double-click the app icon or
+            // open it from Spotlight.
+            showMainWindow()
         }
-        
-        OpenSuperWhisperApp.startTranscriptionQueue()
+
+        YapApp.startTranscriptionQueue()
         observeMicrophoneChanges()
+    }
+
+    /// Called by AppKit when the user reopens the app while it's still
+    /// running (Spotlight, double-click in Finder, Cmd+Tab activation
+    /// when the window had been closed). Default behavior for an
+    /// LSUIElement app is "do nothing", which leaves the user with no
+    /// way to bring the window back short of clicking the menu-bar
+    /// icon. Restore the main window instead.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            showMainWindow()
+        }
+        return true
+    }
+
+    private func ensureWindowOnscreen(_ window: NSWindow) {
+        let frame = window.frame
+        let intersectsAnyScreen = NSScreen.screens.contains { screen in
+            screen.visibleFrame.intersects(frame)
+        }
+        guard !intersectsAnyScreen else { return }
+
+        let target = NSScreen.main?.visibleFrame ?? NSScreen.screens.first?.visibleFrame
+        guard let target else { return }
+        let centered = NSRect(
+            x: target.midX - frame.width / 2,
+            y: target.midY - frame.height / 2,
+            width: frame.width,
+            height: frame.height
+        )
+        window.setFrame(centered, display: true)
     }
 
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
@@ -162,7 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 iconImage.isTemplate = true
                 button.image = iconImage
             } else {
-                button.image = NSImage(systemSymbolName: "waveform", accessibilityDescription: "OpenSuperWhisper")
+                button.image = NSImage(systemSymbolName: "waveform", accessibilityDescription: "Yap")
             }
             
             button.action = #selector(statusBarButtonClicked(_:))
@@ -175,7 +216,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private func updateStatusBarMenu() {
         let menu = NSMenu()
         
-        menu.addItem(NSMenuItem(title: "OpenSuperWhisper", action: #selector(openApp), keyEquivalent: "o"))
+        menu.addItem(NSMenuItem(title: "Open Yap", action: #selector(openApp), keyEquivalent: "o"))
         
         let transcriptionLanguageItem = NSMenuItem(title: "Language", action: nil, keyEquivalent: "")
         languageSubmenu = NSMenu()
@@ -259,7 +300,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
-        
+
         statusItem?.menu = menu
     }
     
@@ -321,8 +362,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
             window.orderFrontRegardless()
             NSApplication.shared.activate(ignoringOtherApps: true)
-        } else {
-            let url = URL(string: "openSuperWhisper://openMainWindow")!
+        } else if let url = URL(string: "yap://openMainWindow") {
             NSWorkspace.shared.open(url)
         }
     }
@@ -331,9 +371,5 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
-    }
-    
-    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
-        return NSSize(width: 450, height: frameSize.height)
     }
 }

@@ -2,8 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleIconFile</key>
-	<string>AppIcon.icns</string>
+	<key>CFBundleDisplayName</key>
+	<string>Yap</string>
+	<key>CFBundleName</key>
+	<string>Yap</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -17,13 +19,17 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon.icns</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>OpenSuperWhisper needs microphone access to record audio for transcription.</string>
+	<key>LSUIElement</key>
+	<true/>
 	<key>NSAccessibilityUsageDescription</key>
-	<string>OpenSuperWhisper needs accessibility access to provide system-wide functionality.</string>
+	<string>Yap needs accessibility access to insert dictated text and read the focused app.</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>OpenSuperWhisper needs accessibility access to provide system-wide functionality.</string>
+	<string>Yap needs accessibility access to insert dictated text and read the focused app.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Yap needs microphone access to record audio for transcription.</string>
 </dict>
 </plist>

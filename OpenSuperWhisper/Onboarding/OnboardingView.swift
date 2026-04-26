@@ -327,10 +327,14 @@ struct OnboardingView: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
-                    Text("OpenSuperWhisper")
-                        .font(.system(size: 32, weight: .bold))
+                    Text("Yap")
+                        .font(.system(size: 48, weight: .heavy, design: .rounded))
                         .foregroundStyle(
-                            .white
+                            LinearGradient(
+                                colors: [.white, .white.opacity(0.85)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
                         )
                 }
                 .padding(.bottom, 8)

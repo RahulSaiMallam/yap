@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yap — Press, talk, paste.</title>
+<meta name="description" content="A free, open-source dictation app for macOS. Hold a key, speak, and your words land in any app. Everything runs locally — no cloud, no telemetry, no account.">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0c0c10;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #e8e8ec;
+  --muted: #9a9aa3;
+  --accent: #8a6cff;
+  --accent-2: #4ad7ff;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(ellipse 1200px 800px at 50% -100px, rgba(138, 108, 255, 0.18) 0%, transparent 60%), var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  line-height: 1.55;
+  min-height: 100vh;
+  padding: 0;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+/* Header */
+header {
+  padding: 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: black;
+  font-size: 14px;
+}
+.nav-links { display: flex; gap: 24px; align-items: center; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color .15s;
+}
+.nav-links a:hover { color: var(--text); }
+
+/* Hero */
+.hero {
+  padding: 80px 0 60px;
+  text-align: center;
+}
+.hero h1 {
+  font-size: clamp(48px, 7vw, 84px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1.02;
+  background: linear-gradient(135deg, var(--text) 0%, var(--text) 30%, var(--accent) 70%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 24px;
+}
+.hero-sub {
+  font-size: clamp(17px, 2vw, 20px);
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 44px;
+}
+.cta-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.btn {
+  padding: 16px 32px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform .12s, box-shadow .15s, background .15s;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: black;
+  box-shadow: var(--shadow);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--surface-2); }
+.cta-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+/* Demo / pill mock */
+.demo {
+  margin: 60px auto 80px;
+  max-width: 720px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.demo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 600px 200px at 50% 50%, rgba(138, 108, 255, 0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 16px;
+  background: rgba(0, 0, 0, 0.94);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.bar {
+  width: 2px;
+  background: white;
+  border-radius: 2px;
+  animation: wave 1.4s ease-in-out infinite;
+}
+@keyframes wave {
+  0%, 100% { height: 4px; opacity: 0.5; }
+  50% { height: 12px; opacity: 0.95; }
+}
+.bar:nth-child(1) { animation-delay: 0s; }
+.bar:nth-child(2) { animation-delay: 0.07s; }
+.bar:nth-child(3) { animation-delay: 0.14s; }
+.bar:nth-child(4) { animation-delay: 0.21s; }
+.bar:nth-child(5) { animation-delay: 0.28s; }
+.bar:nth-child(6) { animation-delay: 0.35s; }
+.bar:nth-child(7) { animation-delay: 0.42s; }
+.bar:nth-child(8) { animation-delay: 0.49s; }
+.bar:nth-child(9) { animation-delay: 0.56s; }
+.bar:nth-child(10) { animation-delay: 0.63s; }
+.bar:nth-child(11) { animation-delay: 0.70s; }
+.bar:nth-child(12) { animation-delay: 0.77s; }
+.bar:nth-child(13) { animation-delay: 0.84s; }
+.bar:nth-child(14) { animation-delay: 0.91s; }
+.bar:nth-child(15) { animation-delay: 0.98s; }
+.demo-caption {
+  margin-top: 32px;
+  font-size: 13px;
+  color: var(--muted);
+  font-feature-settings: "tnum";
+}
+.demo-caption code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+/* Features */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 60px 0;
+}
+.feature {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.feature h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+}
+.feature p {
+  font-size: 14px;
+  color: var(--muted);
+}
+.feature-icon {
+  font-size: 22px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Install section */
+.install {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 36px;
+  margin: 60px 0;
+}
+.install h2 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 24px;
+}
+.steps {
+  display: grid;
+  gap: 14px;
+}
+.step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: black;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+.step-body p { font-size: 15px; line-height: 1.55; }
+.step-body p + p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.step-body code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: ui-monospace, "SF Mono", monospace;
+}
+
+/* Footer */
+footer {
+  padding: 60px 0 80px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+footer a { color: var(--muted); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">Y</div>
+    <span>Yap</span>
+  </div>
+  <nav class="nav-links">
+    <a href="#install">Install</a>
+    <a href="#features">Features</a>
+    <a href="https://github.com/rahulsaimallam/yap">GitHub</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Press, talk, paste.</h1>
+  <p class="hero-sub">A free, open-source dictation app for macOS. Hold a key, speak, and your words land in any app. Everything runs locally — no cloud, no telemetry, no account.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/rahulsaimallam/yap/releases/latest/download/Yap.dmg">
+      Download for macOS
+    </a>
+    <a class="btn btn-ghost" href="https://github.com/rahulsaimallam/yap">View on GitHub</a>
+  </div>
+  <p class="cta-note">Apple Silicon · macOS 14+ · ~14 MB</p>
+</section>
+
+<section class="demo">
+  <div class="pill">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  </div>
+  <p class="demo-caption">Hold <code>Fn</code> to talk. The pill appears at the bottom of your screen.</p>
+</section>
+
+<section class="features" id="features">
+  <div class="feature">
+    <span class="feature-icon">🔒</span>
+    <h3>100% local</h3>
+    <p>Whisper runs on your Mac. Audio never leaves your machine. No cloud, no logging, no telemetry.</p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon">⚡</span>
+    <h3>Snappy</h3>
+    <p>Decoding in 1–2 seconds for short phrases. Feels native.</p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon">🌍</span>
+    <h3>Multilingual</h3>
+    <p>30+ languages including Hindi, Telugu, Tamil, Bengali, Spanish, French, Mandarin, Japanese, Arabic, and more.</p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon">💬</span>
+    <h3>Smart paste</h3>
+    <p>Drops into the focused text field. In chat apps it auto-submits with a configurable delay.</p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon">✨</span>
+    <h3>AI cleanup (optional)</h3>
+    <p>Pipe transcripts through a local Ollama model to remove "um/uh", fix punctuation, and tighten the prose.</p>
+  </div>
+  <div class="feature">
+    <span class="feature-icon">🎛️</span>
+    <h3>Yours to tune</h3>
+    <p>Hotkey, model, language, vocabulary, auto-submit delay — every value is exposed in Settings.</p>
+  </div>
+</section>
+
+<section class="install" id="install">
+  <h2>Install in 60 seconds</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><a href="https://github.com/rahulsaimallam/yap/releases/latest/download/Yap.dmg">Download Yap.dmg</a></p>
+        <p>Apple Silicon Mac on macOS 14 or later.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Open the DMG and drag Yap to your Applications folder.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Right-click Yap in Applications, then choose <code>Open</code>.</p>
+        <p>Yap is signed but not notarized (no $99/yr Developer ID), so the first launch needs this manual step. Subsequent launches are normal.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>Grant <strong>Microphone</strong>, <strong>Accessibility</strong>, and <strong>Input Monitoring</strong> when prompted.</p>
+        <p>Required for the global hotkey and for pasting into other apps.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p>Hold the <code>Fn</code> key, speak, release. Your words appear wherever your cursor is.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>Yap is open-source under the MIT License. Built on <a href="https://github.com/Starmel/OpenSuperWhisper">OpenSuperWhisper by Starmel</a>, <a href="https://github.com/ggerganov/whisper.cpp">whisper.cpp</a>, and <a href="https://github.com/sindresorhus/KeyboardShortcuts">KeyboardShortcuts</a>.</p>
+    <p style="margin-top: 8px;"><a href="https://github.com/rahulsaimallam/yap">GitHub</a> · <a href="https://github.com/rahulsaimallam/yap/issues">Report an issue</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

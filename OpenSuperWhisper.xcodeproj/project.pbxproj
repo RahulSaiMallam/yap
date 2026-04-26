@@ -807,10 +807,12 @@
 					"$(PROJECT_DIR)/libwhisper/**",
 				);
 				INFOPLIST_FILE = "OpenSuperWhisper/OpenSuperWhisper-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Yap;
+				INFOPLIST_KEY_CFBundleName = Yap;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "OpenSuperWhisper needs accessibility access to provide system-wide functionality.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Yap needs accessibility access to insert dictated text and read the focused app.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenSuperWhisper needs microphone access to record audio for transcription.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Yap needs microphone access to record audio for transcription.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -828,8 +830,8 @@
 					"$(inherited)",
 					"-lomp",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ru.starmel.OpenSuperWhisper;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.yap.dictation;
+				PRODUCT_NAME = Yap;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -869,10 +871,12 @@
 					"$(PROJECT_DIR)/libwhisper/**",
 				);
 				INFOPLIST_FILE = "OpenSuperWhisper/OpenSuperWhisper-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Yap;
+				INFOPLIST_KEY_CFBundleName = Yap;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "OpenSuperWhisper needs accessibility access to provide system-wide functionality.";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Yap needs accessibility access to insert dictated text and read the focused app.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenSuperWhisper needs microphone access to record audio for transcription.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Yap needs microphone access to record audio for transcription.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -891,8 +895,8 @@
 					"$(inherited)",
 					"-lomp",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ru.starmel.OpenSuperWhisper;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.yap.dictation;
+				PRODUCT_NAME = Yap;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;

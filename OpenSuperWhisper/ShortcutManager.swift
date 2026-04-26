@@ -14,6 +14,17 @@ extension KeyboardShortcuts.Name {
 class ShortcutManager {
     static let shared = ShortcutManager()
 
+    /// Captured at the moment the hotkey is pressed, before the indicator
+    /// window steals focus. Read by the transcription-completion path to
+    /// decide between auto-paste (text field was focused) and notify-only
+    /// (focus was on Finder, menu bar, etc.).
+    @MainActor static var hotkeyPressedInTextField: Bool = false
+
+    /// Captured alongside `hotkeyPressedInTextField`: true when focus was
+    /// on a known chat / messaging app at hotkey-press time. Drives the
+    /// optional auto-submit (synthetic Return after paste) behavior.
+    @MainActor static var hotkeyPressedInChatApp: Bool = false
+
     private var activeVm: IndicatorViewModel?
     private var holdWorkItem: DispatchWorkItem?
     private let holdThreshold: TimeInterval = 0.3
@@ -105,6 +116,10 @@ class ShortcutManager {
         Task { @MainActor in
             if self.activeVm == nil {
                 let cursorPosition = FocusUtils.getCurrentCursorPosition()
+                let bundleID = FocusUtils.currentFocusedBundleID()
+                ShortcutManager.hotkeyPressedInTextField = FocusUtils.isLikelyTextDestination(bundleID: bundleID)
+                ShortcutManager.hotkeyPressedInChatApp = FocusUtils.isChatApp(bundleID: bundleID)
+                DiagLog.write("handleKeyDown bundleID=\(bundleID ?? "nil") textField=\(ShortcutManager.hotkeyPressedInTextField) chatApp=\(ShortcutManager.hotkeyPressedInChatApp) trusted=\(AXIsProcessTrusted())")
                 let indicatorPoint: NSPoint?
                 if let caret = FocusUtils.getCaretRect() {
                     indicatorPoint = FocusUtils.convertAXPointToCocoa(caret.origin)
@@ -141,6 +156,31 @@ class ShortcutManager {
                 self.activeVm = nil
                 self.holdMode = false
             }
+        }
+    }
+}
+
+/// Append-only diagnostic logger that writes to /tmp/osw-diag.log so logs
+/// are readable from outside the app regardless of how it was launched.
+/// `print()` only reaches stdout, which is invisible when the app is
+/// launched via launch services. Remove once auto-submit is verified.
+enum DiagLog {
+    private static let logURL = URL(fileURLWithPath: "/tmp/osw-diag.log")
+    private static let formatter: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    static func write(_ message: String) {
+        let line = "\(formatter.string(from: Date())) \(message)\n"
+        guard let data = line.data(using: .utf8) else { return }
+        if let handle = try? FileHandle(forWritingTo: logURL) {
+            defer { try? handle.close() }
+            try? handle.seekToEnd()
+            try? handle.write(contentsOf: data)
+        } else {
+            try? data.write(to: logURL)
         }
     }
 }

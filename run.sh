@@ -44,15 +44,33 @@ fi
 # Check if build output contains BUILD FAILED or if the command failed
 if [[ $? -eq 0 ]] && [[ ! "$BUILD_OUTPUT" =~ "BUILD FAILED" ]]; then
     echo "Building successful!"
+
+    # Sign with the local self-signed "OpenSuperWhisper Dev" identity (cert
+    # name kept; what matters is the cert leaf hash) AND an explicit
+    # designated requirement that matches "any binary with our bundle ID,
+    # signed by our cert". TCC stores this requirement when permissions
+    # are granted; on future rebuilds the requirement still matches, so
+    # Accessibility / Input Monitoring / Microphone / PostEvent grants
+    # persist. Without an explicit requirement, codesign would emit a
+    # cdhash-based default, and every rebuild would invalidate TCC.
+    APP_PATH=./build/Build/Products/Debug/Yap.app
+    DEV_IDENTITY="OpenSuperWhisper Dev"
+    DEV_CERT_HASH="D2B516D35BF2EB798AF37F43F07A12A0CFC42AFC"
+    BUNDLE_ID="app.yap.dictation"
+    DESIG_REQ='designated => identifier "'$BUNDLE_ID'" and certificate leaf = H"'$DEV_CERT_HASH'"'
+    echo "Signing $APP_PATH with $DEV_IDENTITY..."
+    codesign --force --deep --sign "$DEV_IDENTITY" \
+        --requirements "=$DESIG_REQ" \
+        --entitlements OpenSuperWhisper/OpenSuperWhisper.entitlements \
+        "$APP_PATH"
+
     if $JUST_BUILD; then
         exit 0
     fi
     echo "Starting the app..."
-    # Remove quarantine attribute if exists
-    xattr -d com.apple.quarantine ./Build/Build/Products/Debug/OpenSuperWhisper.app 2>/dev/null || true
-    # Run the app and show logs
-    ./Build/Build/Products/Debug/OpenSuperWhisper.app/Contents/MacOS/OpenSuperWhisper
+    xattr -dr com.apple.quarantine "$APP_PATH" 2>/dev/null || true
+    "$APP_PATH/Contents/MacOS/Yap"
 else
     echo "Build failed!"
     exit 1
-fi 
+fi

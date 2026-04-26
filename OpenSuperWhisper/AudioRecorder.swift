@@ -84,24 +84,14 @@ class AudioRecorder: NSObject, ObservableObject {
     }
     
     private func playNotificationSound() {
-        // Try to play using NSSound first
-        guard let soundURL = Bundle.main.url(forResource: "notification", withExtension: "mp3") else {
-            print("Failed to find notification sound file")
-            // Fall back to system sound if notification.mp3 is not found
-            NSSound.beep()
+        let url = Bundle.main.url(forResource: "sound_start", withExtension: "wav")
+            ?? Bundle.main.url(forResource: "notification", withExtension: "mp3")
+        guard let soundURL = url, let sound = NSSound(contentsOf: soundURL, byReference: false) else {
             return
         }
-        
-        if let sound = NSSound(contentsOf: soundURL, byReference: false) {
-            // Set maximum volume to ensure it's audible
-            sound.volume = 0.3
-            sound.play()
-            notificationSound = sound
-        } else {
-            print("Failed to create NSSound from URL, falling back to system beep")
-            // Fall back to system beep if NSSound creation fails
-            NSSound.beep()
-        }
+        sound.volume = 0.6
+        sound.play()
+        notificationSound = sound
     }
     
     func startRecording() {

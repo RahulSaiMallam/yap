@@ -18,7 +18,48 @@ class FocusUtils {
     static func getCurrentCursorPosition() -> NSPoint {
         return NSEvent.mouseLocation
     }
-    
+
+    /// Bundle IDs known to NOT accept pasted text (Finder, our own indicator).
+    /// Positive AX role detection is unreliable across Electron apps and
+    /// contenteditable web inputs, so we use a small negative list and
+    /// default to "yes, paste here" for everything else.
+    static let nonTextDestinations: Set<String> = [
+        "com.apple.finder",
+        "app.yap.dictation",
+    ]
+
+    /// Bundle IDs of chat / messaging apps where pressing Enter sends a
+    /// message. Used by the auto-submit feature.
+    static let chatApps: Set<String> = [
+        "com.anthropic.claudefordesktop",
+        "com.openai.chat",
+        "com.tinyspeck.slackmacgap",
+        "com.apple.MobileSMS",
+        "com.hnc.Discord",
+        "com.microsoft.teams2",
+        "com.tdesktop.Telegram",
+        "WhatsApp",
+        "net.whatsapp.WhatsApp",
+    ]
+
+    /// Bundle ID of the currently frontmost application. Uses NSWorkspace
+    /// because the AX-based equivalent (`kAXFocusedApplicationAttribute` on
+    /// the system-wide element) silently returns nil on macOS 26 even when
+    /// the process is AX-trusted.
+    static func currentFocusedBundleID() -> String? {
+        return NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    }
+
+    static func isLikelyTextDestination(bundleID: String?) -> Bool {
+        guard let bundleID else { return true }
+        return !nonTextDestinations.contains(bundleID)
+    }
+
+    static func isChatApp(bundleID: String?) -> Bool {
+        guard let bundleID else { return false }
+        return chatApps.contains(bundleID)
+    }
+
     static func getCaretRect() -> CGRect? {
         // Получаем системный элемент для доступа ко всему UI
         let systemElement = AXUIElementCreateSystemWide()

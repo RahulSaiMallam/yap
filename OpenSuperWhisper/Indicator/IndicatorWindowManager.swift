@@ -39,34 +39,35 @@ class IndicatorWindowManager: IndicatorViewDelegate {
             self.window = panel
         }
         
-        // Position window - use the screen containing the point, or main screen as fallback
+        // Pick the screen the user is currently on (the one containing the
+        // caret / cursor / frontmost window), then anchor at bottom-center
+        // of that screen — WisprFlow-style fixed position. The cursor's
+        // location is used only to disambiguate the multi-monitor case.
         let targetScreen = point.flatMap { FocusUtils.screenContaining(point: $0) } ?? NSScreen.main
         if let window = window, let screen = targetScreen {
-            let windowFrame = window.frame
-            let screenFrame = screen.frame
-            
-            var x: CGFloat
-            var y: CGFloat
-            
-            if let point = point {
-                // Position near cursor
-                x = point.x - windowFrame.width / 2
-                y = point.y + 20 // 20 points above cursor
-            } else {
-                // Default to top center of screen
-                x = screenFrame.midX - windowFrame.width / 2
-                y = screenFrame.maxY - windowFrame.height - 100 // 100 pixels from top
-            }
-            
-            // Adjust if out of screen bounds
-            x = max(screenFrame.minX, min(x, screenFrame.maxX - windowFrame.width))
-            y = max(screenFrame.minY, min(y, screenFrame.maxY - windowFrame.height))
-            
-            window.setFrameOrigin(NSPoint(x: x, y: y))
-            
-            // Set content view
+            // Set content view first so the hosting view's intrinsic size
+            // can be measured. The pre-allocated NSPanel size is ignored.
             let hostingView = NSHostingView(rootView: IndicatorWindow(viewModel: newViewModel))
             window.contentView = hostingView
+            let fitting = hostingView.fittingSize
+            let contentSize = NSSize(
+                width: max(fitting.width, 80),
+                height: max(fitting.height, 30)
+            )
+            window.setContentSize(contentSize)
+
+            // Now position using the actual window size on the visible
+            // frame (excludes Dock and menu bar), bottom-center, ~70 pt
+            // above the bottom edge of the working area.
+            let visibleFrame = screen.visibleFrame
+            let windowFrame = window.frame
+            var x = visibleFrame.midX - windowFrame.width / 2
+            var y = visibleFrame.minY + 70
+
+            x = max(visibleFrame.minX, min(x, visibleFrame.maxX - windowFrame.width))
+            y = max(visibleFrame.minY, min(y, visibleFrame.maxY - windowFrame.height))
+
+            window.setFrameOrigin(NSPoint(x: x, y: y))
         }
         
         window?.orderFront(nil)

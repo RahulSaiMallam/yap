@@ -3,31 +3,32 @@ import ApplicationServices
 import Carbon
 
 class ClipboardUtil {
-    
+
     static func insertText(_ text: String) {
+        copyToClipboard(text)
+        simulatePaste()
+    }
+
+    static func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
-        
-        // Save current pasteboard contents
-        let savedContents = saveCurrentPasteboardContents()
-        
-        // Set new text to pasteboard
         pasteboard.declareTypes([.string], owner: nil)
         pasteboard.setString(text, forType: .string)
-        
-        // Simulate Cmd+V using layout-aware keycode resolution
-        simulatePaste()
-        
-        // Add a small delay to ensure paste operation completes
-        Thread.sleep(forTimeInterval: 0.1)
-        
-        // Restore original contents
-        if let contents = savedContents {
-            restorePasteboardContents(contents)
-        }
     }
     
     private static func simulatePaste() {
         sendCmdV()
+    }
+
+    /// Posts a synthetic Return-key press. Used by the auto-submit feature
+    /// after dictation pastes into a chat app.
+    static func simulateReturn() {
+        let keyCodeReturn: CGKeyCode = 36
+        guard let source = CGEventSource(stateID: .combinedSessionState),
+              let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCodeReturn, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCodeReturn, keyDown: false)
+        else { return }
+        keyDown.post(tap: .cghidEventTap)
+        keyUp.post(tap: .cghidEventTap)
     }
     
     private static func sendCmdV() {
@@ -124,44 +125,6 @@ class ClipboardUtil {
             }
         }
         return nil
-    }
-    
-    private static func saveCurrentPasteboardContents() -> ([NSPasteboard.PasteboardType: Any], [NSPasteboard.PasteboardType])? {
-        let pasteboard = NSPasteboard.general
-        let types = pasteboard.types ?? []
-        
-        guard !types.isEmpty else { return nil }
-        
-        var savedContents: [NSPasteboard.PasteboardType: Any] = [:]
-        
-        for type in types {
-            if let data = pasteboard.data(forType: type) {
-                savedContents[type] = data
-            } else if let string = pasteboard.string(forType: type) {
-                savedContents[type] = string
-            } else if let urls = pasteboard.propertyList(forType: type) as? [String] {
-                savedContents[type] = urls
-            }
-        }
-        
-        return (!savedContents.isEmpty) ? (savedContents, types) : nil
-    }
-    
-    private static func restorePasteboardContents(_ contents: ([NSPasteboard.PasteboardType: Any], [NSPasteboard.PasteboardType])) {
-        let pasteboard = NSPasteboard.general
-        let (savedContents, types) = contents
-        
-        pasteboard.declareTypes(types, owner: nil)
-        
-        for (type, content) in savedContents {
-            if let data = content as? Data {
-                pasteboard.setData(data, forType: type)
-            } else if let string = content as? String {
-                pasteboard.setString(string, forType: type)
-            } else if let urls = content as? [String] {
-                pasteboard.setPropertyList(urls, forType: type)
-            }
-        }
     }
     
     @available(*, deprecated, renamed: "insertText")
